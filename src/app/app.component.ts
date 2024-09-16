@@ -1,13 +1,27 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  imports: [CommonModule],
+  template: `
+    <ul>
+      <li *ngFor="let doc of documents$ | async">
+        {{ doc | json }}
+      </li>
+    </ul>
+  `
 })
-export class AppComponent {
-  title = 'angular-firebase-app';
+export class AppComponent implements OnInit {
+  private firestore: Firestore = inject(Firestore);
+  documents$: Observable<any[]> = new Observable<any[]>();
+
+  ngOnInit() {
+    const collectionName = 'items';
+    const collectionInstance = collection(this.firestore, collectionName);
+    this.documents$ = collectionData(collectionInstance);
+  }
 }
